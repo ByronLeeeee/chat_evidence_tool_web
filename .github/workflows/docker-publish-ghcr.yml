@@ -3,7 +3,7 @@ name: Build and Push Docker Image to GHCR
 # 控制 Actions 的触发时机
 on:
   push:
-    branches: [ "main" ] # 当 main 分支有 push 时触发
+    branches: [ "master" ] # 当 main 分支有 push 时触发
     tags:
       - 'v*'        # 当创建 v 开头的 tag 时触发 (例如 v1.0, v1.1.0)
   workflow_dispatch:    # 允许手动从 Actions 页面触发
