@@ -1,197 +1,718 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>易存讯 - 聊天记录取证助手</title>
     <!-- Google Fonts (Inter) - 可选，如果你在CSS中使用了 -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
-    <link rel="icon" href="/static/assets/icon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg"> <!-- 移除了 navbar-dark 和 bg-primary，让CSS变量控制 -->
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <!-- 你可以放一个SVG Logo在这里 -->
-                易存讯
-            </a>
-            <button id="aboutButton" class="btn btn-outline-light btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#aboutModal">
-                关于
-            </button>
-        </div>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css"
+    />
+    <link rel="icon" href="/static/assets/icon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg">
+      <!-- 移除了 navbar-dark 和 bg-primary，让CSS变量控制 -->
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+          <!-- 你可以放一个SVG Logo在这里 -->
+          易存讯
+        </a>
+        <button
+          id="aboutButton"
+          class="btn btn-outline-light btn-sm"
+          type="button"
+          data-bs-toggle="modal"
+          data-bs-target="#aboutModal"
+        >
+          关于
+        </button>
+      </div>
     </nav>
 
-    <div class="container mt-lg-5 mt-4 mb-5"> 
-        <div class="row g-4"> 
-            <!-- Left Panel: Settings -->
+    <div class="container mt-lg-5 mt-4 mb-5">
+      
+
+      <!-- 功能切换 Tabs -->
+      <ul class="nav nav-tabs mb-4" id="toolTab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link active"
+            id="video-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#video-panel"
+            type="button"
+            role="tab"
+            aria-controls="video-panel"
+            aria-selected="true"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-film me-1"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M0 1a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V1zm4 0v6h8V1H4zm8 8H4v6h8v-6zM1 1v2h2V1H1zm2 3H1v2h2V4zm-2 3H1v2h2V7zm2 3H1v2h2v-2zm-2 3H1v2h2v-2zM15 1h-2v2h2V1zm-2 3h2v2h-2V4zm2 3h-2v2h2V7zm-2 3h2v2h-2v-2zm2 3h-2v2h2v-2z"
+              />
+            </svg>
+            视频处理
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="long-image-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#long-image-panel"
+            type="button"
+            role="tab"
+            aria-controls="long-image-panel"
+            aria-selected="false"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-arrows-angle-expand me-1"
+              viewBox="0 0 16 16"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M1.5 10.036a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3.5a.5.5 0 0 1-.5-.5v-3.5a.5.5 0 0 1 .5-.5zm13-4.072a.5.5 0 0 1 .5.5v3.5a.5.5 0 0 1-.5.5h-3.5a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 .5-.5zM10.036 1.5a.5.5 0 0 1 .5-.5h3.5a.5.5 0 0 1 .5.5v3.5a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1-.5-.5zm-4.072 13a.5.5 0 0 1-.5-.5v-3h-3a.5.5 0 0 1 0-1h3.5a.5.5 0 0 1 .5.5v3.5a.5.5 0 0 1-.5.5z"
+              />
+            </svg>
+            长截图处理
+          </button>
+        </li>
+      </ul>
+
+      <!-- Tab 内容 -->
+      <div class="tab-content" id="toolTabContent">
+        <!-- 视频处理面板 -->
+        <div
+          class="tab-pane fade show active"
+          id="video-panel"
+          role="tabpanel"
+          aria-labelledby="video-tab"
+        >
+          <div class="row g-4">
+            <!-- 左侧: 视频上传与设置 -->
             <div class="col-lg-5">
-                <div class="card shadow-sm"> 
-                    <div class="card-header">
-                        <h5 class="mb-0">1. 上传与参数配置</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-4">
-                            <label for="videoFile" class="form-label fw-medium">选择视频文件:</label> 
-                            <input class="form-control" type="file" id="videoFile" accept="video/*">
-                        </div>
-                        <button id="uploadButton" class="btn btn-primary w-100 mb-4" disabled>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-upload me-2" viewBox="0 0 16 16">
-                                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-                                <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
-                            </svg>
-                            上传视频
-                        </button>
-                        
-                        <hr class="my-4"> 
-
-                        <h6 class="mb-3 fw-medium">参数设置:</h6>
-                        <div class="mb-3">
-                            <label for="frameInterval" class="form-label">帧提取间隔 (秒):</label>
-                            <input type="number" class="form-control" id="frameInterval" value="1" min="0.1" step="0.1">
-                        </div>
-                        <div class="mb-3">
-                            <label for="exclusionList" class="form-label">内容排除白名单 (每行一个):</label>
-                            <textarea class="form-control" id="exclusionList" rows="3" placeholder="例如:
+              <div class="card shadow-sm">
+                <div class="card-header">
+                  <h5 class="mb-0">视频上传与参数配置</h5>
+                </div>
+                <div class="card-body">
+                  <div class="mb-4">
+                    <label for="videoFile" class="form-label fw-medium"
+                      >选择视频文件:</label
+                    >
+                    <input
+                      class="form-control"
+                      type="file"
+                      id="videoFile"
+                      accept="video/*"
+                    />
+                  </div>
+                  <button
+                    id="uploadVideoButton"
+                    class="btn btn-primary w-100 mb-4"
+                    disabled
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      class="bi bi-upload me-2"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"
+                      />
+                      <path
+                        d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"
+                      />
+                    </svg>
+                    上传视频
+                  </button>
+                  <hr class="my-4" />
+                  <h6 class="mb-3 fw-medium">参数设置:</h6>
+                  <div class="mb-3">
+                    <label for="frameInterval" class="form-label"
+                      >帧提取间隔 (秒):</label
+                    >
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="frameInterval"
+                      value="1"
+                      min="0.1"
+                      step="0.1"
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="exclusionList" class="form-label"
+                      >内容排除白名单 (每行一个):</label
+                    >
+                    <textarea
+                      class="form-control"
+                      id="exclusionList"
+                      rows="3"
+                      placeholder="例如:
 微信
-文件传输助手"></textarea> 
-                        </div>
-
-                        <hr class="my-4">
-
-                        <h6 class="mb-3 fw-medium">OCR 分析区域 (可选):</h6>
-                        <div class="d-flex gap-2 mb-2">
-                            <button id="loadRefFrameButton" class="btn btn-secondary btn-sm flex-grow-1" disabled>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-image me-1" viewBox="0 0 16 16">
-                                    <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                                    <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1h12z"/>
-                                  </svg>
-                                加载参考帧
-                            </button>
-                            <button id="clearOcrRegionButton" class="btn btn-warning btn-sm flex-grow-1" disabled>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eraser me-1" viewBox="0 0 16 16">
-                                    <path d="M8.086 2.207a2 2 0 0 1 2.828 0l3.879 3.879a2 2 0 0 1 0 2.828l-5.5 5.5A2 2 0 0 1 7.879 15H5.12a2 2 0 0 1-1.414-.586l-2.5-2.5a2 2 0 0 1 0-2.828l6.879-6.879zm.66 11.34L3.453 8.254 1.914 9.793a1 1 0 0 0 0 1.414l2.5 2.5a1 1 0 0 0 .707.293H7.88a1 1 0 0 0 .707-.293l.16-.16z"/>
-                                  </svg>
-                                清除选区
-                            </button>
-                        </div>
-                        <div id="ocrCropContainer" class="mb-3" style="max-width: 100%; min-height: 200px; border-radius: var(--border-radius-sm); display: none;"> 
-                            <img id="refImage" src="#" alt="Reference Frame for OCR" style="max-width: 100%; display: block;">
-                        </div>
-                        <p id="ocrCoords" class="form-text text-muted"></p> 
-
-                        <hr class="my-4">
-
-                        <h6 class="mb-3 fw-medium">PDF 输出设置:</h6>
-                        <div class="row g-3 mb-3"> 
-                            <div class="col-sm-6">
-                                <label for="pdfRows" class="form-label">每页行数:</label>
-                                <input type="number" class="form-control" id="pdfRows" value="3" min="1">
-                            </div>
-                            <div class="col-sm-6">
-                                <label for="pdfCols" class="form-label">每页列数:</label>
-                                <input type="number" class="form-control" id="pdfCols" value="2" min="1">
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="pdfTitle" class="form-label">PDF 页面标题:</label>
-                            <input type="text" class="form-control" id="pdfTitle" value="聊天记录证据">
-                        </div>
-                        
-                        <button id="processButton" class="btn btn-primary w-100 mt-4" disabled>  
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-circle-fill me-2" viewBox="0 0 16 16">
-                                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM6.79 5.093A.5.5 0 0 0 6 5.5v5a.5.5 0 0 0 .79.407l3.5-2.5a.5.5 0 0 0 0-.814l-3.5-2.5z"/>
-                            </svg>
-                            开始处理并生成PDF
-                        </button>
+文件传输助手"
+                    ></textarea>
+                  </div>
+                  <hr class="my-4" />
+                  <h6 class="mb-3 fw-medium">OCR 分析区域 (可选):</h6>
+                  <div class="d-flex gap-2 mb-2">
+                    <button
+                      id="loadRefFrameButton"
+                      class="btn btn-secondary btn-sm flex-grow-1"
+                      disabled
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        class="bi bi-image me-1"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"
+                        />
+                        <path
+                          d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1h12z"
+                        />
+                      </svg>
+                      加载参考帧
+                    </button>
+                    <button
+                      id="clearOcrRegionButton"
+                      class="btn btn-warning btn-sm flex-grow-1"
+                      disabled
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        class="bi bi-eraser me-1"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M8.086 2.207a2 2 0 0 1 2.828 0l3.879 3.879a2 2 0 0 1 0 2.828l-5.5 5.5A2 2 0 0 1 7.879 15H5.12a2 2 0 0 1-1.414-.586l-2.5-2.5a2 2 0 0 1 0-2.828l6.879-6.879zm.66 11.34L3.453 8.254 1.914 9.793a1 1 0 0 0 0 1.414l2.5 2.5a1 1 0 0 0 .707.293H7.88a1 1 0 0 0 .707-.293l.16-.16z"
+                        />
+                      </svg>
+                      清除选区
+                    </button>
+                  </div>
+                  <div
+                    id="ocrCropContainer"
+                    class="mb-3"
+                    style="
+                      max-width: 100%;
+                      min-height: 200px;
+                      border-radius: var(--border-radius-sm);
+                      display: none;
+                      border: 1px dashed #ccc;
+                    "
+                  >
+                    <img
+                      id="refImage"
+                      src="#"
+                      alt="Reference Frame for OCR"
+                      style="max-width: 100%; display: block"
+                    />
+                  </div>
+                  <p id="ocrCoords" class="form-text text-muted"></p>
+                  <hr class="my-4" />
+                  <h6 class="mb-3 fw-medium">PDF 输出设置:</h6>
+                  <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                      <label for="pdfRowsVideo" class="form-label"
+                        >每页行数:</label
+                      >
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="pdfRowsVideo"
+                        value="3"
+                        min="1"
+                      />
                     </div>
+                    <div class="col-sm-6">
+                      <label for="pdfColsVideo" class="form-label"
+                        >每页列数:</label
+                      >
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="pdfColsVideo"
+                        value="2"
+                        min="1"
+                      />
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="pdfLayoutVideo" class="form-label"
+                      >PDF排列方式:</label
+                    >
+                    <select class="form-select" id="pdfLayoutVideo">
+                      <option value="grid" selected>左右优先 (行优先)</option>
+                      <option value="column">上下优先 (列优先)</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label for="pdfTitleVideo" class="form-label"
+                      >PDF 页面标题:</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="pdfTitleVideo"
+                      value="聊天记录证据"
+                    />
+                  </div>
+                  <button
+                    id="processVideoButton"
+                    class="btn btn-primary w-100 mt-4"
+                    disabled
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      class="bi bi-play-circle-fill me-2"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM6.79 5.093A.5.5 0 0 0 6 5.5v5a.5.5 0 0 0 .79.407l3.5-2.5a.5.5 0 0 0 0-.814l-3.5-2.5z"
+                      />
+                    </svg>
+                    处理视频并生成PDF
+                  </button>
                 </div>
+              </div>
             </div>
-
-            <!-- Right Panel: Progress, Logs, Preview -->
+            <!-- 右侧: 视频处理状态与预览 -->
             <div class="col-lg-7">
-                <div class="card shadow-sm">
-                    <div class="card-header">
-                        <h5 class="mb-0">处理状态与预览</h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="progressBarContainer" class="mb-4" style="display: none;"> 
-                            <div class="progress mb-1" style="height: 1.2rem;"> 
-                                <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
-                            </div>
-                            <p id="progressStatus" class="text-center text-muted small mb-0"></p> 
-                        </div>
-                        
-                        <div class="mb-4">
-                            <h6 class="mb-2 fw-medium">操作日志:</h6>
-                            <div id="logOutput" class="form-control" style="height: 200px; overflow-y: scroll;"></div> 
-                        </div>
-
-                        <div class="mb-4">
-                            <h6 class="mb-2 fw-medium">筛选后帧预览 (可拖拽排序):</h6>
-                            <div id="previewArea" class="row g-2 p-2" style="min-height: 150px;"> 
-                                <!-- Preview images will be appended here -->
-                            </div>
-                        </div>
-                        
-                        <div class="d-grid gap-2"> 
-                            <a id="downloadPdfButton" href="#" class="btn btn-info w-100 disabled" target="_blank" download>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download me-2" viewBox="0 0 16 16">
-                                  <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-                                  <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
-                                </svg>
-                                下载PDF
-                            </a>
-                            <button id="cleanupButton" class="btn btn-danger w-100" disabled>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3 me-2" viewBox="0 0 16 16">
-                                  <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
-                                </svg>
-                                清理会话
-                            </button>
-                        </div>
-                    </div>
+              <div class="card shadow-sm">
+                <div class="card-header">
+                  <h5 class="mb-0">视频处理状态与预览</h5>
                 </div>
+                <div class="card-body">
+                  <div
+                    id="videoProgressBarContainer"
+                    class="mb-4"
+                    style="display: none"
+                  >
+                    <div class="progress mb-1" style="height: 1.2rem">
+                      <div
+                        id="videoProgressBar"
+                        class="progress-bar progress-bar-striped progress-bar-animated"
+                        role="progressbar"
+                        style="width: 0%"
+                      >
+                        0%
+                      </div>
+                    </div>
+                    <p
+                      id="videoProgressStatus"
+                      class="text-center text-muted small mb-0"
+                    ></p>
+                  </div>
+                  <div class="mb-4">
+                    <h6 class="mb-2 fw-medium">操作日志:</h6>
+                    <div
+                      id="videoLogOutput"
+                      class="form-control"
+                      style="height: 200px; overflow-y: scroll"
+                    ></div>
+                  </div>
+                  <div class="mb-4">
+                    <h6 class="mb-2 fw-medium">筛选后帧预览 (可拖拽排序):</h6>
+                    <div
+                      id="videoPreviewArea"
+                      class="row g-2 p-2"
+                      style="
+                        min-height: 150px;
+                        border: 1px solid #eee;
+                        border-radius: var(--border-radius-sm);
+                      "
+                    ></div>
+                  </div>
+                  <div class="d-grid gap-2">
+                    <a
+                      id="videoDownloadPdfButton"
+                      href="#"
+                      class="btn btn-info w-100 disabled"
+                      target="_blank"
+                      download
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        class="bi bi-download me-2"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"
+                        />
+                        <path
+                          d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"
+                        />
+                      </svg>
+                      下载PDF
+                    </a>
+                    <button
+                      id="videoCleanupButton"
+                      class="btn btn-danger w-100"
+                      disabled
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        class="bi bi-trash3 me-2"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"
+                        />
+                      </svg>
+                      清理会话
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
+
+        <!-- 长截图处理面板 -->
+        <div
+          class="tab-pane fade"
+          id="long-image-panel"
+          role="tabpanel"
+          aria-labelledby="long-image-tab"
+        >
+          <div class="row g-4">
+            <!-- 左侧: 长截图上传与设置 -->
+            <div class="col-lg-5">
+              <div class="card shadow-sm">
+                <div class="card-header">
+                  <h5 class="mb-0">长截图上传与配置</h5>
+                </div>
+                <div class="card-body">
+                  <div class="mb-4">
+                    <label for="longImageFile" class="form-label fw-medium"
+                      >选择长截图文件:</label
+                    >
+                    <input
+                      class="form-control"
+                      type="file"
+                      id="longImageFile"
+                      accept="image/png, image/jpeg, image/webp"
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="sliceHeight" class="form-label"
+                      >每张截图高度 (像素):</label
+                    >
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="sliceHeight"
+                      value="1000"
+                      min="100"
+                      step="50"
+                    />
+                    <div class="form-text text-muted">
+                      建议根据A4排版调整，典型值800-1200像素。
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="overlapHeight" class="form-label"
+                      >重叠区域高度 (像素):</label
+                    >
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="overlapHeight"
+                      value="100"
+                      min="0"
+                      step="10"
+                    />
+                    <div class="form-text text-muted">
+                      用于保证截图连续性，通常50-150像素。
+                    </div>
+                  </div>
+                  <hr class="my-4" />
+                  <h6 class="mb-3 fw-medium">PDF 输出设置:</h6>
+                  <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                      <label for="pdfRowsLong" class="form-label"
+                        >每页行数:</label
+                      >
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="pdfRowsLong"
+                        value="3"
+                        min="1"
+                      />
+                    </div>
+                    <div class="col-sm-6">
+                      <label for="pdfColsLong" class="form-label"
+                        >每页列数:</label
+                      >
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="pdfColsLong"
+                        value="1"
+                        min="1"
+                      />
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="pdfLayoutLong" class="form-label"
+                      >PDF排列方式:</label
+                    >
+                    <select class="form-select" id="pdfLayoutLong">
+                      <option value="column" selected>上下优先 (列优先)</option>
+                      <option value="grid">左右优先 (行优先)</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label for="pdfTitleLong" class="form-label"
+                      >PDF 页面标题:</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="pdfTitleLong"
+                      value="长截图证据"
+                    />
+                  </div>
+                  <button
+                    id="processLongImageButton"
+                    class="btn btn-primary w-100 mt-4"
+                    disabled
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      class="bi bi-scissors me-2"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M3.5 3.5c-.614-.884-.074-1.962.858-2.5L8 7.226 11.642 1c.932.538 1.472 1.616.858 2.5L8.81 8.61l1.556 2.661a2.5 2.5 0 1 1-.794.637L8 9.73l-1.572 2.177a2.5 2.5 0 1 1-.794-.637L7.19 8.61 3.5 3.5zm2.5 10a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0zm7 0a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0z"
+                      />
+                    </svg>
+                    裁剪并生成PDF
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- 右侧: 长截图处理状态与预览 -->
+            <div class="col-lg-7">
+              <div class="card shadow-sm">
+                <div class="card-header">
+                  <h5 class="mb-0">长截图处理状态与预览</h5>
+                </div>
+                <div class="card-body">
+                  <div
+                    id="longImageProgressBarContainer"
+                    class="mb-4"
+                    style="display: none"
+                  >
+                    <div class="progress mb-1" style="height: 1.2rem">
+                      <div
+                        id="longImageProgressBar"
+                        class="progress-bar progress-bar-striped progress-bar-animated"
+                        role="progressbar"
+                        style="width: 0%"
+                      >
+                        0%
+                      </div>
+                    </div>
+                    <p
+                      id="longImageProgressStatus"
+                      class="text-center text-muted small mb-0"
+                    ></p>
+                  </div>
+                  <div class="mb-4">
+                    <h6 class="mb-2 fw-medium">操作日志:</h6>
+                    <div
+                      id="longImageLogOutput"
+                      class="form-control"
+                      style="height: 200px; overflow-y: scroll"
+                    ></div>
+                  </div>
+                  <div class="mb-4">
+                    <h6 class="mb-2 fw-medium">裁剪后截图预览 (可拖拽排序):</h6>
+                    <div
+                      id="longImagePreviewArea"
+                      class="row g-2 p-2"
+                      style="
+                        min-height: 150px;
+                        border: 1px solid #eee;
+                        border-radius: var(--border-radius-sm);
+                      "
+                    ></div>
+                  </div>
+                  <div class="d-grid gap-2">
+                    <a
+                      id="longImageDownloadPdfButton"
+                      href="#"
+                      class="btn btn-info w-100 disabled"
+                      target="_blank"
+                      download
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        class="bi bi-download me-2"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"
+                        />
+                        <path
+                          d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"
+                        />
+                      </svg>
+                      下载PDF
+                    </a>
+                    <button
+                      id="longImageCleanupButton"
+                      class="btn btn-danger w-100"
+                      disabled
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        class="bi bi-trash3 me-2"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"
+                        />
+                      </svg>
+                      清理临时文件
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- End of tab-content -->
     </div>
-
+    <!-- End of container -->
     <!-- About Modal -->
-    <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered"> 
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="aboutModalLabel">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-info-circle-fill me-2 align-text-bottom" viewBox="0 0 16 16">
-                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
-                          </svg>
-                        关于 易存讯
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>本工具利用AI模型从视频文件中提取聊天记录帧，进行OCR识别与筛选，并生成PDF证据文件。</p>
-                    <p class="mb-1"><strong>版本:</strong> <span class="badge bg-primary rounded-pill">0.1.1</span></p>
-                    <hr>
-                    <p class="fw-medium">主要技术:</p>
-                    <ul class="list-unstyled"> 
-                        <li><span class="badge bg-secondary me-1">后端</span> FastAPI, PaddleOCR, ReportLab, FFmpeg</li>
-                        <li><span class="badge bg-secondary me-1">前端</span> JavaScript, Bootstrap 5, Cropper.js</li>
-                    </ul>
-                     <hr>
-                    <p class="fw-medium">作者信息:</p>
-                    <p class="mb-1">李伯阳 - 北京市隆安（广州）律师事务所</p>
-                    <p class="mb-0"><small>电子邮箱: liboyang@lslby.com | 微信号: legal-lby</small></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
-                </div>
-            </div>
+    <div
+      class="modal fade"
+      id="aboutModal"
+      tabindex="-1"
+      aria-labelledby="aboutModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="aboutModalLabel">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                fill="currentColor"
+                class="bi bi-info-circle-fill me-2 align-text-bottom"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"
+                />
+              </svg>
+              关于 易存讯
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p>
+              本工具利用AI模型从视频文件中提取聊天记录帧，进行OCR识别与筛选，并生成PDF证据文件。
+            </p>
+            <p class="mb-1">
+              <strong>版本:</strong>
+              <span class="badge bg-primary rounded-pill">0.1.1</span>
+            </p>
+            <hr />
+            <p class="fw-medium">主要技术:</p>
+            <ul class="list-unstyled">
+              <li>
+                <span class="badge bg-secondary me-1">后端</span> FastAPI,
+                PaddleOCR, ReportLab, FFmpeg
+              </li>
+              <li>
+                <span class="badge bg-secondary me-1">前端</span> JavaScript,
+                Bootstrap 5, Cropper.js
+              </li>
+            </ul>
+            <hr />
+            <p class="fw-medium">作者信息:</p>
+            <p class="mb-1">李伯阳 - 北京市隆安（广州）律师事务所</p>
+            <p class="mb-0">
+              <small>电子邮箱: liboyang@lslby.com | 微信号: legal-lby</small>
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              关闭
+            </button>
+          </div>
         </div>
+      </div>
     </div>
 
     <!-- Theme Toggle Button will be appended here by script.js -->
@@ -200,5 +721,5 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="/static/script.js"></script>
-</body>
+  </body>
 </html>
