@@ -1,0 +1,12 @@
+.venv
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.git
+.gitignore
+.dockerignore
+temp_sessions_host/
+output_host/
+.idea/
+*.DS_Store

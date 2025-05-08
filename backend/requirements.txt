@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard] # Includes websockets, etc.
+python-multipart
+paddleocr
+paddlepaddle
+reportlab
+Pillow
+aiofiles
+setuptools
+# Consider adding a specific version for stability
+# opencv-python-headless # PaddleOCR might need this or full opencv-python
