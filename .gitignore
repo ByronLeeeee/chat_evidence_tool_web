@@ -16,5 +16,5 @@ wheels/
 .python-version
 
 # dev cache
-output/*
-temp_session/*
+output/
+temp_sessions/
