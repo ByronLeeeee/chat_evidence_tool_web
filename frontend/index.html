@@ -28,8 +28,14 @@
       <!-- 移除了 navbar-dark 和 bg-primary，让CSS变量控制 -->
       <div class="container-fluid">
         <a class="navbar-brand" href="#">
-          <!-- 你可以放一个SVG Logo在这里 -->
-          易存讯
+          <img
+            src="/static/assets/icon.ico"
+            alt="Logo"
+            width="30"
+            height="30"
+            class="d-inline-block align-text-top me-2"
+          />
+          <span class="fw-bold">易存讯</span>
         </a>
         <button
           id="aboutButton"
@@ -44,8 +50,6 @@
     </nav>
 
     <div class="container mt-lg-5 mt-4 mb-5">
-      
-
       <!-- 功能切换 Tabs -->
       <ul class="nav nav-tabs mb-4" id="toolTab" role="tablist">
         <li class="nav-item" role="presentation">
@@ -714,6 +718,13 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Lightbox Modal Structure -->
+    <div id="imageLightbox" class="lightbox" style="display: none">
+      <span class="lightbox-close">×</span>
+      <img class="lightbox-content" id="lightboxImg" />
+      <div id="lightboxCaption"></div>
     </div>
 
     <!-- Theme Toggle Button will be appended here by script.js -->

@@ -52,6 +52,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const longImageCleanupButton = document.getElementById(
     "longImageCleanupButton"
   );
+  const lightbox = document.getElementById("imageLightbox");
+  const lightboxImg = document.getElementById("lightboxImg");
+  const lightboxCaption = document.getElementById("lightboxCaption");
+  const lightboxClose = document.querySelector(".lightbox-close");
 
   let activeWebSocket = null;
   let videoSessionId = null;
@@ -224,6 +228,56 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error(`Error initializing Sortable for ${sortableVarName}:`, e);
     }
   }
+
+  function openLightbox(imageSrc, captionText = "") {
+    if (!lightbox || !lightboxImg) return;
+    document.body.classList.add("lightbox-open"); // Prevent background scroll
+    lightboxImg.src = imageSrc;
+    if (lightboxCaption) {
+      lightboxCaption.textContent =
+        captionText || decodeURIComponent(imageSrc.split("/").pop()); // Default caption to filename
+    }
+    lightbox.style.opacity = "0"; // Start transparent for fade-in
+    lightbox.style.display = "block";
+    setTimeout(() => {
+      // Allow display block to take effect before starting opacity transition
+      lightbox.style.opacity = "1";
+    }, 10); // Small delay
+  }
+
+  function closeLightbox() {
+    if (!lightbox) return;
+    document.body.classList.remove("lightbox-open");
+    lightbox.style.opacity = "0";
+    setTimeout(() => {
+      // Wait for fade-out before hiding
+      lightbox.style.display = "none";
+      if (lightboxImg) lightboxImg.src = ""; // Clear image to free memory
+    }, 300); // Match CSS transition duration
+  }
+
+  if (lightboxClose) {
+    lightboxClose.addEventListener("click", closeLightbox);
+  }
+  // Close lightbox if user clicks outside the image (on the overlay)
+  if (lightbox) {
+    lightbox.addEventListener("click", function (event) {
+      if (event.target === lightbox) {
+        // Clicked on the overlay itself
+        closeLightbox();
+      }
+    });
+  }
+  // Close lightbox with Escape key
+  document.addEventListener("keydown", function (event) {
+    if (
+      event.key === "Escape" &&
+      lightbox &&
+      lightbox.style.display === "block"
+    ) {
+      closeLightbox();
+    }
+  });
 
   if (videoFileInput && uploadVideoButton) {
     videoFileInput.addEventListener("change", () => {
@@ -778,12 +832,12 @@ document.addEventListener("DOMContentLoaded", () => {
               const img = document.createElement("img");
               img.src = imgUrl; // Backend now provides full, correct URLs
               img.className = "img-fluid rounded preview-image";
-              img.alt = "Preview";
+              img.alt = "预览";
               img.style.cursor = "pointer";
-              img.title = "双击在新标签页中打开";
-              img.addEventListener("dblclick", () =>
-                window.open(imgUrl, "_blank")
-              );
+              img.title = "双击预览";
+              img.addEventListener('click', function() {
+                openLightbox(this.src, this.alt); // Pass src and alt (or filename)
+            });
               colDiv.appendChild(img);
               targetPreviewArea.appendChild(colDiv);
             });
@@ -802,11 +856,7 @@ document.addEventListener("DOMContentLoaded", () => {
             targetDownloadButton.href = data.result_url;
             targetDownloadButton.classList.remove("disabled");
           }
-          addLog(
-            `PDF准备就绪，请在下方点击下载`,
-            "success",
-            messageTaskType
-          );
+          addLog(`PDF准备就绪，请在下方点击下载`, "success", messageTaskType);
           updateProgress(100, "全部完成！", messageTaskType);
         } else if (isCompletedNoPdf) {
           addLog("处理完成，无PDF。", "info", messageTaskType);
