@@ -73,6 +73,11 @@
   ); /* 调整暗色下的聚焦阴影透明度 */
 }
 
+.title {
+  color: white;
+  margin-bottom: var(--spacing-md);
+}
+
 /* 表单控件 (全局，会被主题变量覆盖) */
 .form-control,
 .form-select {
