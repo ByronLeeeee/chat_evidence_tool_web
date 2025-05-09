@@ -307,15 +307,65 @@ textarea.form-control { min-height: 100px; }
 
 
 /* --- 主题切换按钮 (保持不变) --- */
+/* frontend/style.css */
+
+/* ... 你的 :root 和 [data-theme="dark"] 变量定义 ... */
+/* ... 你的 body, navbar, btn, card, form-control 等通用样式 ... */
+
+/* --- 主题切换按钮 --- */
 .theme-toggle {
-  position: fixed; bottom: 20px; right: 20px; width: 48px; height: 48px;
-  border-radius: 50%; background-color: var(--secondary-bg-color); color: var(--main-text-color);
-  display: flex; align-items: center; justify-content: center; cursor: pointer;
-  box-shadow: var(--shadow-md); z-index: 1000; border: 1px solid var(--border-color);
-  transition: all var(--transition-fast);
+  position: fixed !important;
+  bottom: 20px !important;
+  right: 20px !important;
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 50% !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: background-color 0.2s, transform 0.2s, border-color 0.2s, color 0.2s !important; /* 确保 color 也加入过渡 */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
+  opacity: 0.9 !important;
+  padding: 0; /* 移除按钮默认的padding，以便SVG更好地填充 */
 }
-.theme-toggle:hover { background-color: var(--tertiary-bg-color); transform: scale(1.05); }
-.theme-toggle:active { transform: scale(0.95); }
+
+/* SVG 图标样式 */
+.theme-toggle svg {
+  width: 24px; /* 调整为你期望的大小 */
+  height: 24px; /* 调整为你期望的大小 */
+  /* fill: currentColor; /* 确保 SVG 内部路径使用这个颜色，如果 SVG 内部没有硬编码 fill */
+}
+
+
+/* 浅色主题下的按钮样式 */
+html:not([data-theme="dark"]) .theme-toggle {
+  background-color: #ffffff !important;
+  color: #000000 !important; /* SVG 会继承这个颜色 */
+  border: 1px solid #cccccc !important;
+}
+
+/* 深色主题下的按钮样式 */
+html[data-theme="dark"] .theme-toggle {
+  background-color: #333333 !important;
+  color: #ffffff !important; /* SVG 会继承这个颜色 */
+  border: 1px solid #555555 !important;
+}
+
+/* 悬停效果 (保持或调整) */
+.theme-toggle:hover {
+  transform: scale(1.05) !important;
+  opacity: 1 !important;
+}
+
+html:not([data-theme="dark"]) .theme-toggle:hover {
+  background-color: #f0f0f0 !important; /* 浅色主题悬停背景 */
+}
+
+html[data-theme="dark"] .theme-toggle:hover {
+  background-color: #444444 !important; /* 深色主题悬停背景 */
+}
 
 /* --- 其他微调 --- */
 hr { border-color: var(--border-color); margin: var(--spacing-lg) 0; opacity: 1; transition: border-color var(--transition-normal); }
