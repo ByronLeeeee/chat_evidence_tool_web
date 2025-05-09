@@ -720,3 +720,110 @@ hr {
 body.lightbox-open {
   overflow: hidden;
 }
+
+/* --- Accordion (手风琴) 适配 --- */
+.accordion-item {
+  background-color: var(--card-bg-color); /* 手风琴项目背景，使用卡片背景色 */
+  border: 1px solid var(--border-color);
+  /* Bootstrap 5.3+ 默认 accordion-item 就有圆角，如果需要自定义可以取消注释 */
+  /* border-radius: var(--border-radius-md); */
+  margin-bottom: var(--spacing-sm); /* 可选：项目之间的间距 */
+}
+
+/* 移除第一个和最后一个 item 的特殊圆角，让整体更统一，除非你需要 Bootstrap 默认行为 */
+.accordion-item:first-of-type {
+  border-top-left-radius: var(--border-radius-md);
+  border-top-right-radius: var(--border-radius-md);
+}
+.accordion-item:last-of-type {
+  border-bottom-left-radius: var(--border-radius-md);
+  border-bottom-right-radius: var(--border-radius-md);
+  margin-bottom: 0; /* 最后一个 item 通常不需要下外边距 */
+}
+
+.accordion-button {
+  background-color: var(--secondary-bg-color); /* 默认按钮背景 */
+  color: var(--main-text-color); /* 默认按钮文字颜色 */
+  font-weight: 500;
+  box-shadow: none !important; /* 移除默认的聚焦阴影 */
+  padding: var(--spacing-md);
+  border-radius: 0; /* 确保按钮本身没有圆角，由 accordion-item 控制 */
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.accordion-button:focus {
+  z-index: 3;
+  border-color: var(--primary-color); /* 聚焦时边框颜色 */
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15); /* 使用 Bootstrap 的方式或自定义 */
+}
+
+/* 展开时的按钮样式 */
+.accordion-button:not(.collapsed) {
+  color: var(--primary-accent-text-color, #ffffff); /* 展开时按钮文字颜色 - 默认为白色 */
+  background-color: var(--primary-color); /* 展开时按钮背景 - 使用主强调色 */
+  box-shadow: inset 0 -1px 0 var(--border-color); /* 确保这条线在暗色模式下也可见 */
+}
+
+/* 展开/折叠图标 (Bootstrap 默认是 SVG filter 实现的) */
+.accordion-button::after {
+  /* 默认图标颜色会基于按钮的 color 属性通过 filter 调整 */
+  /* 如果在暗色主题下，展开的按钮背景是深色，文字是浅色，图标应该也是浅色 */
+  /* Bootstrap 通常能处理好，但如果不行，可能需要自定义 SVG 或覆盖 filter */
+  filter: brightness(0) invert(1); /* 尝试将图标变白，适用于深色背景 */
+}
+.accordion-button:not(.collapsed)::after {
+   /* 当按钮展开时，如果背景变亮，文字变深，图标也应该变深 */
+   /* Bootstrap的默认规则是 `filter: none`，然后继承按钮的 color */
+   /* 如果你的展开按钮是深色背景浅色字，这个filter可能需要调整 */
+  filter: brightness(0) invert(1); /* 保持图标为白色，如果展开的按钮背景是深色 */
+}
+
+
+/* 暗色主题下的 Accordion 特定调整 */
+[data-theme="dark"] .accordion-item {
+  background-color: var(--card-bg-color); /* 确保使用暗色卡片背景 */
+  border-color: var(--border-color); /* 确保使用暗色边框 */
+}
+
+[data-theme="dark"] .accordion-button {
+  background-color: var(--secondary-bg-color); /* 暗色主题的次要背景 */
+  color: var(--main-text-color); /* 暗色主题的主要文字颜色 (浅色) */
+}
+
+[data-theme="dark"] .accordion-button:focus {
+  border-color: var(--primary-color); /* 保持或使用暗色主题的强调色 */
+  /* box-shadow 使用你定义的 --input-focus-box-shadow-color 可能会更好 */
+  box-shadow: 0 0 0 0.25rem var(--input-focus-box-shadow-color);
+}
+
+/* 暗色主题下展开时的按钮样式 */
+[data-theme="dark"] .accordion-button:not(.collapsed) {
+  color: var(--primary-accent-text-color, #ffffff); /* 确保文字是浅色 */
+  background-color: var(--primary-color); /* 主强调色背景 */
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.125); /* 底部线用浅色半透明 */
+}
+
+/* 暗色主题下展开/折叠图标的颜色调整 */
+[data-theme="dark"] .accordion-button::after {
+  /* 默认图标颜色会基于按钮的 color 属性通过 filter 调整 */
+  /* 对于深色按钮浅色文字，图标应该也是浅色 */
+  filter: brightness(0) invert(1); /* 尝试强制图标为白色 */
+}
+/* 暗色主题下，展开的按钮背景是深色，文字是浅色，图标应该也是浅色 */
+[data-theme="dark"] .accordion-button:not(.collapsed)::after {
+  filter: brightness(0) invert(1); /* 保持图标为白色 */
+}
+
+
+.accordion-body {
+  padding: var(--spacing-md);
+  background-color: var(--main-bg-color); /* 手风琴内容区域使用主背景色 */
+  color: var(--main-text-color); /* 确保内容文字颜色正确 */
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+[data-theme="dark"] .accordion-body {
+  background-color: var(--card-bg-color); /* 暗色下内容区域用卡片背景色，与item一致 */
+  color: var(--main-text-color);
+}
