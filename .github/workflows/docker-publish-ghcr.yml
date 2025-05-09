@@ -3,61 +3,109 @@ name: Build and Push Docker Image to GHCR
 # 控制 Actions 的触发时机
 on:
   push:
-    branches: [ "master" ] # 当 main 分支有 push 时触发
+    branches: [ "master" ]
     tags:
       - 'v*'        # 当创建 v 开头的 tag 时触发 (例如 v1.0, v1.1.0)
-  workflow_dispatch:    # 允许手动从 Actions 页面触发
+  workflow_dispatch:
 
 jobs:
   build-and-push-ghcr:
-    runs-on: ubuntu-latest # 使用 GitHub 提供的最新 Ubuntu Runner
-    # 设置权限，允许 Action 读取仓库内容并写入 GitHub Packages (ghcr.io)
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+      security-events: write  # 添加安全扫描权限
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4 # 检出你的代码
+        uses: actions/checkout@v4
 
-      # 下面两步不是严格必需，但使用 buildx 是推荐的最佳实践
+      # 设置 BuildKit 和 QEMU 支持多平台构建
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v3.0.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v3.0.0
+        with:
+          version: latest
+
+      # 缓存 Docker 层，提高构建速度
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v3.0.0
         with:
           registry: ghcr.io
-          # 使用 github.actor 作为用户名 (例如 YourGitHubUsername)
-          # 使用内置的 GITHUB_TOKEN 作为密码进行认证
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata (tags, labels) for Docker
-        id: meta # 给这个步骤一个 ID
-        uses: docker/metadata-action@v5
+        id: meta
+        uses: docker/metadata-action@v5.0.0
         with:
-          # 重要：设置镜像名称指向 ghcr.io
-          # github.repository 的格式是 '用户名/仓库名'
-          images: ghcr.io/${{ github.repository }} # 例如 ghcr.io/your-username/chat-evidence-tool-web
-          # 定义如何生成 Docker 镜像标签 (可以根据你的喜好调整)
+          images: ghcr.io/${{ github.repository }}
           tags: |
-            type=ref,event=branch # 基于分支名 (例如: main)
-            type=ref,event=tag  # 基于 Git 标签名 (例如: v1.0.0)
-            type=sha,prefix=,suffix=,format=short # 基于短 commit SHA (例如: abcdef1)
-            # 总是添加 'latest' 标签 (可以移除，或只在 main 分支 push 时添加)
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha,prefix=sha-,format=short
+            # 始终添加 latest 标签，确保每次推送都有 latest 可用
+            type=raw,value=latest
+
+      # 添加安全扫描
+      - name: Build and scan Docker image
+        uses: docker/build-push-action@v5.0.0
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          # 使用 build-args 传递构建参数（如有必要）
+          build-args: |
+            BUILDTIME=${{ github.event.repository.updated_at }}
+            VERSION=${{ github.ref }}
+            REVISION=${{ github.sha }}
+
+      - name: Scan image for vulnerabilities
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ steps.meta.outputs.tags }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
 
       - name: Build and push Docker image to GHCR
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v5.0.0
         with:
-          context: .               # Dockerfile 所在的上下文路径 (项目根目录)
-          file: ./Dockerfile       # Dockerfile 的路径
-          push: true               # 总是推送 (因为我们只在 main 或打 tag 时触发)
-          tags: ${{ steps.meta.outputs.tags }}   # 使用上一步生成的标签
-          labels: ${{ steps.meta.outputs.labels }} # 使用上一步生成的标签
-          cache-from: type=gha     # 使用 GitHub Actions 的缓存 (可选)
-          cache-to: type=gha,mode=max
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          # 如果有条件构建特性，可以添加
+          platforms: linux/amd64,linux/arm64
+
+      # 避免缓存持续增长
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
