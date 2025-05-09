@@ -333,8 +333,8 @@ textarea.form-control { min-height: 100px; }
 
 /* SVG 图标样式 */
 .theme-toggle svg {
-  width: 24px; /* 调整为你期望的大小 */
-  height: 24px; /* 调整为你期望的大小 */
+  width: 20px; 
+  height: 20px; 
   /* fill: currentColor; /* 确保 SVG 内部路径使用这个颜色，如果 SVG 内部没有硬编码 fill */
 }
 
