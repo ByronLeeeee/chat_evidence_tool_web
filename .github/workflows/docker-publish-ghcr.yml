@@ -1,11 +1,10 @@
 name: Build and Push Docker Image to GHCR
 
-# 控制 Actions 的触发时机
 on:
   push:
     branches: [ "master" ]
     tags:
-      - 'v*'        # 当创建 v 开头的 tag 时触发 (例如 v1.0, v1.1.0)
+      - 'v*'
   workflow_dispatch:
 
 jobs:
@@ -14,13 +13,12 @@ jobs:
     permissions:
       contents: read
       packages: write
-      security-events: write  # 添加安全扫描权限
+      security-events: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 设置 BuildKit 和 QEMU 支持多平台构建
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3.0.0
 
@@ -29,7 +27,6 @@ jobs:
         with:
           version: latest
 
-      # 缓存 Docker 层，提高构建速度
       - name: Cache Docker layers
         uses: actions/cache@v3
         with:
@@ -56,38 +53,45 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
             type=sha,prefix=sha-,format=short
-            # 始终添加 latest 标签，确保每次推送都有 latest 可用
-            type=raw,value=latest
+            type=raw,value=latest # Ensures 'latest' tag is always present
 
-      # 添加安全扫描
-      - name: Build and scan Docker image
+      # 构建镜像并加载到本地 runner，但不推送
+      - name: Build and load Docker image for scanning
+        id: build_for_scan # Added an ID for clarity if needed elsewhere
         uses: docker/build-push-action@v5.0.0
         with:
           context: .
           file: ./Dockerfile
-          push: false
-          load: true
-          tags: ${{ steps.meta.outputs.tags }}
+          push: false # Do not push yet
+          load: true  # Load the image into the Docker daemon on the runner
+          tags: ${{ steps.meta.outputs.tags }} # Apply all generated tags
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-          # 使用 build-args 传递构建参数（如有必要）
           build-args: |
             BUILDTIME=${{ github.event.repository.updated_at }}
             VERSION=${{ github.ref }}
             REVISION=${{ github.sha }}
 
-      - name: Scan image for vulnerabilities
-        uses: aquasecurity/trivy-action@master
+      - name: Scan image for vulnerabilities with Trivy
+        uses: aquasecurity/trivy-action@master # Or a specific version like @0.20.0
         with:
-          image-ref: ${{ steps.meta.outputs.tags }}
+          # Use a single, predictable tag that was loaded in the previous step.
+          # 'latest' is a good candidate because it's always generated.
+          image-ref: 'ghcr.io/${{ github.repository }}:latest'
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
+          # Optional: If you want the workflow to continue even if vulnerabilities are found (but Trivy itself runs successfully)
+          # ignore-unfixed: true
+          # exit-code: '0' # To prevent Trivy from failing the step for found vulnerabilities (report only)
+                          # If you want the step to fail on vulnerabilities, remove this or set to '1'
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        if: always()
+        uses: github/codeql-action/upload-sarif@v3 # Updated to v3
+        if: always() # Run this step even if the previous step (Trivy) fails or finds issues,
+                     # as long as trivy-results.sarif might have been created (or not, in case of Trivy error).
+                     # GitHub will handle cases where the SARIF file is empty or malformed gracefully.
         with:
           sarif_file: 'trivy-results.sarif'
 
@@ -96,16 +100,19 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          push: true
+          push: true # Actually push the image
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-from: type=local,src=/tmp/.buildx-cache # Use existing cache
+          # cache-to is important here if this build differs from the scan build,
+          # but since tags/labels are the same, it should reuse layers.
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-          # 如果有条件构建特性，可以添加
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64 # Specify platforms for the final push
 
       # 避免缓存持续增长
       - name: Move cache
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+        # Run this step only if cache-to was used in a preceding step that might have run
+        if: always()
