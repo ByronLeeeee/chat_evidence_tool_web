@@ -1,10 +1,11 @@
 name: Build and Push Docker Image to GHCR
 
+# 控制 Actions 的触发时机
 on:
   push:
     branches: [ "master" ]
     tags:
-      - 'v*'
+      - 'v*'        # 当创建 v 开头的 tag 时触发 (例如 v1.0, v1.1.0)
   workflow_dispatch:
 
 jobs:
@@ -13,12 +14,13 @@ jobs:
     permissions:
       contents: read
       packages: write
-      security-events: write
+      security-events: write  # 添加安全扫描权限
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 设置 BuildKit 和 QEMU 支持多平台构建
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3.0.0
 
@@ -27,6 +29,7 @@ jobs:
         with:
           version: latest
 
+      # 缓存 Docker 层，提高构建速度
       - name: Cache Docker layers
         uses: actions/cache@v3
         with:
@@ -53,66 +56,57 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
             type=sha,prefix=sha-,format=short
-            type=raw,value=latest # Ensures 'latest' tag is always present
+            type=raw,value=latest
 
-      # 构建镜像并加载到本地 runner，但不推送
-      - name: Build and load Docker image for scanning
-        id: build_for_scan # Added an ID for clarity if needed elsewhere
+      # 先构建并加载镜像，以便后续扫描
+      - name: Build Docker image for scanning
+        id: docker_build
         uses: docker/build-push-action@v5.0.0
         with:
           context: .
           file: ./Dockerfile
-          push: false # Do not push yet
-          load: true  # Load the image into the Docker daemon on the runner
-          tags: ${{ steps.meta.outputs.tags }} # Apply all generated tags
-          labels: ${{ steps.meta.outputs.labels }}
+          push: false
+          load: true
+          tags: ${{ github.repository }}:scan-temp
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           build-args: |
             BUILDTIME=${{ github.event.repository.updated_at }}
             VERSION=${{ github.ref }}
             REVISION=${{ github.sha }}
 
-      - name: Scan image for vulnerabilities with Trivy
-        uses: aquasecurity/trivy-action@master # Or a specific version like @0.20.0
+      # 修复 Trivy 扫描配置，使用特定镜像名称
+      - name: Scan image for vulnerabilities
+        uses: aquasecurity/trivy-action@master
         with:
-          # Use a single, predictable tag that was loaded in the previous step.
-          # 'latest' is a good candidate because it's always generated.
-          image-ref: 'ghcr.io/${{ github.repository }}:latest'
+          image-ref: ${{ github.repository }}:scan-temp
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
-          # Optional: If you want the workflow to continue even if vulnerabilities are found (but Trivy itself runs successfully)
-          # ignore-unfixed: true
-          # exit-code: '0' # To prevent Trivy from failing the step for found vulnerabilities (report only)
-                          # If you want the step to fail on vulnerabilities, remove this or set to '1'
+          exit-code: '0'  # 添加此行，确保即使发现漏洞也不会中断工作流
 
+      # 更新为 v3 版本的 CodeQL 动作
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3 # Updated to v3
-        if: always() # Run this step even if the previous step (Trivy) fails or finds issues,
-                     # as long as trivy-results.sarif might have been created (or not, in case of Trivy error).
-                     # GitHub will handle cases where the SARIF file is empty or malformed gracefully.
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
         with:
           sarif_file: 'trivy-results.sarif'
+          category: 'trivy'
 
+      # 构建并推送最终 Docker 镜像
       - name: Build and push Docker image to GHCR
         uses: docker/build-push-action@v5.0.0
         with:
           context: .
           file: ./Dockerfile
-          push: true # Actually push the image
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=local,src=/tmp/.buildx-cache # Use existing cache
-          # cache-to is important here if this build differs from the scan build,
-          # but since tags/labels are the same, it should reuse layers.
+          cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-          platforms: linux/amd64,linux/arm64 # Specify platforms for the final push
+          platforms: linux/amd64,linux/arm64
 
       # 避免缓存持续增长
       - name: Move cache
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-        # Run this step only if cache-to was used in a preceding step that might have run
-        if: always()
