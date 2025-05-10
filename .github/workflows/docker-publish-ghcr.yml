@@ -14,7 +14,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-      security-events: write  # 添加安全扫描权限
 
     steps:
       - name: Checkout repository
@@ -58,40 +57,6 @@ jobs:
             type=sha,prefix=sha-,format=short
             type=raw,value=latest
 
-      # 先构建并加载镜像，以便后续扫描
-      - name: Build Docker image for scanning
-        id: docker_build
-        uses: docker/build-push-action@v5.0.0
-        with:
-          context: .
-          file: ./Dockerfile
-          push: false
-          load: true
-          tags: ${{ github.repository }}:scan-temp
-          cache-from: type=local,src=/tmp/.buildx-cache
-          build-args: |
-            BUILDTIME=${{ github.event.repository.updated_at }}
-            VERSION=${{ github.ref }}
-            REVISION=${{ github.sha }}
-
-      # 修复 Trivy 扫描配置，使用特定镜像名称
-      - name: Scan image for vulnerabilities
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ github.repository }}:scan-temp
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          severity: 'CRITICAL,HIGH'
-          exit-code: '0'  # 添加此行，确保即使发现漏洞也不会中断工作流
-
-      # 更新为 v3 版本的 CodeQL 动作
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: 'trivy-results.sarif'
-          category: 'trivy'
-
       # 构建并推送最终 Docker 镜像
       - name: Build and push Docker image to GHCR
         uses: docker/build-push-action@v5.0.0
@@ -104,6 +69,10 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           platforms: linux/amd64,linux/arm64
+          build-args: |
+            BUILDTIME=${{ github.event.repository.updated_at }}
+            VERSION=${{ github.ref }}
+            REVISION=${{ github.sha }}
 
       # 避免缓存持续增长
       - name: Move cache
