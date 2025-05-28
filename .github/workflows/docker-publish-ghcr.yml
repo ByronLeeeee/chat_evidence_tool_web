@@ -1,26 +1,23 @@
 name: Build and Push Docker Image to GHCR
 
-# 控制 Actions 的触发时机
 on:
   push:
-    branches: [ "master" ] # 当 master 分支有 push 时触发
+    branches: [ "master" ] 
     tags:
-      - 'v*'        # 当创建 v 开头的 tag 时触发 (例如 v1.0, v1.1.0)
-  workflow_dispatch:    # 允许手动从 Actions 页面触发
+      - 'v*'        
+  workflow_dispatch:    
 
 jobs:
   build-and-push-ghcr:
-    runs-on: ubuntu-latest # 使用 GitHub 提供的最新 Ubuntu Runner
-    # 设置权限，允许 Action 读取仓库内容并写入 GitHub Packages (ghcr.io)
+    runs-on: ubuntu-latest 
     permissions:
       contents: read
       packages: write
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4 # 检出你的代码
+        uses: actions/checkout@v4 
 
-      # 下面两步不是严格必需，但使用 buildx 是推荐的最佳实践
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -31,8 +28,6 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          # 使用 github.actor 作为用户名 (例如 YourGitHubUsername)
-          # 使用内置的 GITHUB_TOKEN 作为密码进行认证
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -40,10 +35,7 @@ jobs:
         id: meta # 给这个步骤一个 ID
         uses: docker/metadata-action@v5
         with:
-          # 重要：设置镜像名称指向 ghcr.io
-          # github.repository 的格式是 '用户名/仓库名'
-          images: ghcr.io/${{ github.repository }} # 例如 ghcr.io/your-username/chat-evidence-tool-web
-          # 定义如何生成 Docker 镜像标签 (可以根据你的喜好调整)
+          images: ghcr.io/${{ github.repository }} 
           tags: |
             type=ref,event=branch # 基于分支名 (例如: main)
             type=ref,event=tag  # 基于 Git 标签名 (例如: v1.0.0)
@@ -53,10 +45,11 @@ jobs:
       - name: Build and push Docker image to GHCR
         uses: docker/build-push-action@v5
         with:
-          context: .               # Dockerfile 所在的上下文路径 (项目根目录)
-          file: ./Dockerfile       # Dockerfile 的路径
-          push: true               # 总是推送 (因为我们只在 main 或打 tag 时触发)
-          tags: ${{ steps.meta.outputs.tags }}   # 使用上一步生成的标签
-          labels: ${{ steps.meta.outputs.labels }} # 使用上一步生成的标签
-          cache-from: type=gha     # 使用 GitHub Actions 的缓存 (可选)
+          context: .               
+          file: ./Dockerfile       
+          push: true              
+          tags: ${{ steps.meta.outputs.tags }}   
+          labels: ${{ steps.meta.outputs.labels }} 
+          platforms: linux/amd64,linux/arm64 
+          cache-from: type=gha     
           cache-to: type=gha,mode=max
