@@ -2,6 +2,7 @@ fastapi
 uvicorn[standard] # Includes websockets, etc.
 python-multipart
 paddleocr
+# or paddlepaddle-gpu if you need GPU support
 paddlepaddle
 reportlab
 Pillow
