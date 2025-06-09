@@ -35,8 +35,7 @@ try:
     print("正在初始化 PaddleOCR 引擎...")
     # 如果需要，可以考虑添加更具体的模型路径，或通过环境变量控制
     # lang='ch' 表示中文识别, use_angle_cls=True 开启方向分类
-    OCR_ENGINE = PaddleOCR(use_angle_cls=True,
-                           show_log=False)
+    OCR_ENGINE = PaddleOCR(use_angle_cls=True)
     print("✅ PaddleOCR 引擎初始化成功。")
 except ImportError:
     print("⚠️ 错误: 未找到 paddleocr 或 paddlepaddle 库。OCR 功能将被禁用。")
