@@ -20,8 +20,8 @@ except Exception as e:
 # 定义模型版本和对应的子目录名称 (根据你使用的PaddleOCR版本可能需要调整)
 # 这些通常是 PaddleOCR 内部下载时使用的默认子目录名结构
 # 你可以通过运行一次 PaddleOCR().ocr('dummy.png') 来观察它下载到了哪些子目录
-det_model_sub_dir = 'whl/det/ch/ch_PP-OCRv4_det_infer' # 示例，可能需要根据版本调整
-rec_model_sub_dir = 'whl/rec/ch/ch_PP-OCRv4_rec_infer' # 示例
+det_model_sub_dir = 'whl/det/ch/ch_PP-OCRv5_det_infer' # 示例，可能需要根据版本调整
+rec_model_sub_dir = 'whl/rec/ch/ch_PP-OCRv5_rec_infer' # 示例
 cls_model_sub_dir = 'whl/cls/ch_ppocr_mobile_v2.0_cls_infer' # 示例
 
 print(f"Attempting to download models using PaddleOCR initialization...")
