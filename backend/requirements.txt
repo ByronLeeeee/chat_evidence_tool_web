@@ -3,7 +3,7 @@ uvicorn[standard] # Includes websockets, etc.
 python-multipart
 # or paddlepaddle-gpu if you need GPU support
 paddlepaddle
-# paddleocr
+paddleocr<3.0.0
 reportlab
 Pillow
 aiofiles
