@@ -35,7 +35,7 @@ try:
     # 它的内部逻辑可能会覆盖。这里指定路径主要是为了触发下载到 PADDLEOCR_HOME 下。
     # 更可靠的方式是让 PaddleOCR 在 PADDLEOCR_HOME 下自动创建其标准子目录。
     # 因此，一个更通用的触发下载方式可能只是简单地初始化一次。
-    PaddleOCR(use_angle_cls=True) # 让它使用默认下载逻辑，但会下载到 PADDLEOCR_HOME 下
+    PaddleOCR() # 让它使用默认下载逻辑，但会下载到 PADDLEOCR_HOME 下
 
     # 或者，如果你确定子目录结构，可以尝试指定：
     # PaddleOCR(use_angle_cls=True, lang='ch', ocr_version='PP-OCRv4',
